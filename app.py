@@ -9,6 +9,8 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from datetime import datetime
 from io import BytesIO
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+from st_aggrid.shared import GridUpdateMode
 
 # Membaca model yang sudah dilatih
 logreg_model = joblib.load("model100.pkl")
@@ -92,18 +94,20 @@ def run():
         if data:
             df = pd.DataFrame(data, columns=['id', 'text', 'sentiment', 'date'])
             
-            # Tambahkan CSS untuk menyesuaikan header
-            hide_dataframe_row_index = """
-                <style>
-                thead th {
-                    text-align: center;
-                }
-                </style>
-            """
-            st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+            # Konfigurasi AgGrid
+            gb = GridOptionsBuilder.from_dataframe(df)
+            gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
+            gb.configure_default_column(resizable=True, filterable=True, sortable=True)
+            grid_options = gb.build()
             
-            # Tampilkan tabel tanpa indeks
-            st.write(df.to_html(index=False, escape=False), unsafe_allow_html=True)
+            # Tampilkan tabel dengan AgGrid
+            AgGrid(
+                df,
+                gridOptions=grid_options,
+                update_mode=GridUpdateMode.SELECTION_CHANGED,
+                fit_columns_on_grid_load=True,
+                theme="streamlit",
+            )
         else:
             st.write("Tidak ada data yang tersedia.")
 
