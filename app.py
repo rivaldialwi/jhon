@@ -93,6 +93,7 @@ def run():
         data = st.session_state['data']
         if data:
             df = pd.DataFrame(data, columns=['id', 'text', 'sentiment', 'date'])
+            df.rename(columns={'text': 'Text', 'sentiment': 'Human'}, inplace=True)
             
             # Konfigurasi AgGrid
             gb = GridOptionsBuilder.from_dataframe(df)
@@ -107,6 +108,14 @@ def run():
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 fit_columns_on_grid_load=True,
                 theme="streamlit",
+            )
+
+            # Tambahkan tombol unduh
+            st.download_button(
+                label="Unduh data sebagai Excel",
+                data=convert_df_to_excel(df),
+                file_name="data_sentimen.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
         else:
             st.write("Tidak ada data yang tersedia.")
